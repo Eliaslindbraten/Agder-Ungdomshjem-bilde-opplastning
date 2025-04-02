@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ta bilde av vegg</title>
+</head>
+<body>
+  <h2>Ta bilde av veggen</h2>
+  <video id="video" width="100%" autoplay></video>
+  <br>
+  <button id="snap">Ta bilde</button>
+  <br><br>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <br>
+  <a id="downloadLink" style="display:none;">Last ned bilde</a>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const snap = document.getElementById('snap');
+    const downloadLink = document.getElementById('downloadLink');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        alert("Kunne ikke starte kamera: " + err);
+      });
+
+    snap.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      canvas.style.display = 'block';
+
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        downloadLink.download = 'bilde.jpg';
+        downloadLink.textContent = 'Last ned bilde';
+        downloadLink.style.display = 'inline-block';
+      });
+    });
+  </script>
+</body>
+</html>
