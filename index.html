@@ -4,16 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ta bilde av vegg</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    video, canvas {
+      max-width: 100%;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    a {
+      display: inline-block;
+      margin-top: 15px;
+    }
+  </style>
 </head>
 <body>
   <h2>Ta bilde av veggen</h2>
-  <video id="video" width="100%" autoplay></video>
+  <video id="video" playsinline autoplay></video>
   <br>
-  <button id="snap">Ta bilde</button>
+  <button id="snap">📸 Ta bilde</button>
   <br><br>
   <canvas id="canvas" style="display:none;"></canvas>
   <br>
-  <a id="downloadLink" style="display:none;">Last ned bilde</a>
+  <a id="downloadLink" style="display:none;">⬇️ Last ned bilde</a>
 
   <script>
     const video = document.getElementById('video');
@@ -21,13 +45,14 @@
     const snap = document.getElementById('snap');
     const downloadLink = document.getElementById('downloadLink');
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
         video.srcObject = stream;
-      })
-      .catch(err => {
-        alert("Kunne ikke starte kamera: " + err);
-      });
+      } catch (error) {
+        alert("Kunne ikke starte kamera: " + error);
+      }
+    }
 
     snap.addEventListener('click', () => {
       canvas.width = video.videoWidth;
@@ -39,10 +64,12 @@
         const url = URL.createObjectURL(blob);
         downloadLink.href = url;
         downloadLink.download = 'bilde.jpg';
-        downloadLink.textContent = 'Last ned bilde';
+        downloadLink.textContent = '⬇️ Last ned bilde';
         downloadLink.style.display = 'inline-block';
       });
     });
+
+    window.addEventListener('load', startCamera);
   </script>
 </body>
 </html>
