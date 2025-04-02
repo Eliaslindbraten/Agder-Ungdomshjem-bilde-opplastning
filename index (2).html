@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FDV Bildeopplasting</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h2 {
+      color: #333;
+    }
+    video, canvas {
+      max-width: 100%;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .info {
+      font-size: 14px;
+      margin-top: 10px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h2>📸 Ta bilde og last opp til FDV</h2>
+  <video id="video" playsinline autoplay muted></video>
+  <br />
+  <button id="snap">📷 Ta bilde</button>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <input id="urlOutput" readonly placeholder="Lenke til bilde vises her..." style="display:none;" />
+  <div class="info">Lenken kopieres automatisk til utklippstavlen. Lim den inn i Revit.</div>
+
+  <script>
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const snap = document.getElementById("snap");
+    const urlOutput = document.getElementById("urlOutput");
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+        video.srcObject = stream;
+      } catch (err) {
+        alert("Kunne ikke starte kamera: " + err.message);
+      }
+    }
+
+    function uploadImage(blob) {
+      const formData = new FormData();
+      formData.append("file", blob);
+      formData.append("upload_preset", "Agder_Ungdomsbolig-fdv_bilder");
+
+      fetch("https://api.cloudinary.com/v1_1/eliaslindbraten/image/upload", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.secure_url) {
+          urlOutput.value = data.secure_url;
+          urlOutput.style.display = "block";
+          navigator.clipboard.writeText(data.secure_url);
+          alert("✅ Bilde lastet opp! Lenke kopiert til utklippstavle.");
+        } else {
+          alert("❌ Opplasting feilet.");
+        }
+      })
+      .catch(() => {
+        alert("❌ Nettverksfeil under opplasting.");
+      });
+    }
+
+    snap.addEventListener("click", () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      canvas.toBlob(uploadImage, "image/jpeg");
+    });
+
+    window.addEventListener("load", startCamera);
+  </script>
+</body>
+</html>
