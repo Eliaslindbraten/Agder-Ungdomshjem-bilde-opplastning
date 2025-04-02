@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ta bilde lokalt</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    video, canvas {
+      max-width: 100%;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>📸 Ta bilde (lokal visning)</h2>
+  <video id="video" playsinline autoplay muted></video>
+  <br />
+  <button id="snap">📷 Ta bilde</button>
+  <br /><br />
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const snap = document.getElementById("snap");
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        alert("Kunne ikke starte kamera: " + err.message);
+      }
+    }
+
+    snap.addEventListener("click", () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      canvas.style.display = "block";
+    });
+
+    window.addEventListener("load", startCamera);
+  </script>
+</body>
+</html>
